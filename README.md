@@ -110,18 +110,19 @@ npm run build    # Build TypeScript
 npm start        # Start production server
 ```
 
+
 ### Project Structure
 
-filevault-lite/
-├── backend/
-│ ├── src/
-│ │ ├── aws/ # AWS S3 configuration
-│ │ ├── routes/ # API route handlers
-│ │ └── index.ts # Main server file
-│ ├── package.json
-│ └── tsconfig.json
-├── frontend.html # Upload interface
-└── README.md
+- **filevault-lite/**
+  - **backend/**
+    - **src/**
+      - `aws/` - AWS S3 configuration
+      - `routes/` - API route handlers
+      - `index.ts` - Main server file
+    - `package.json`
+    - `tsconfig.json`
+  - `frontend.html` - Upload interface
+  - `README.md`
 
 ## 🔒 Security Features
 
