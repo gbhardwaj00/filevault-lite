@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileVault Lite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>FileVault Lite</h1>
+    <p>Upload your files securely and privately.</p>
+
+    <div class="upload-area" id="uploadArea">
+        <p>Click or drag and drop files here</p>
+        <input type="file" id="fileInput" style="display: none;">
+        <button onclick="document.getElementById('fileInput').click()">Choose Files</button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const result = document.getElementById('result');
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                // Get upload URL from backend
+                const response = await fetch('http://localhost:4000/upload/init', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        mime: file.type,
+                        size: file.size,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Super detailed debugging
+                console.log('=== UPLOAD DEBUG ===');
+                console.log('Backend Response:', data);
+                console.log('Upload URL:', data.uploadUrl);
+                console.log('S3 Key:', data.key);
+                console.log('File Details:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                });
+
+                // Parse the S3 URL to see what we're actually hitting
+                const url = new URL(data.uploadUrl);
+                console.log('S3 Hostname:', url.hostname);
+                console.log('S3 Path:', url.pathname);
+                console.log('S3 Query Params:', url.searchParams);
+                console.log('==================');
+
+                const uploadResponse = await fetch(data.uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type,
+                    },
+                });
+
+                if (uploadResponse.ok) {
+                    showResult('success', `File uploaded successfully! S3 Key: ${data.key}`);
+                } else {
+                    // Super detailed error logging
+                    console.error('=== S3 ERROR DETAILS ===');
+                    console.error('Status:', uploadResponse.status);
+                    console.error('Status Text:', uploadResponse.statusText);
+                    console.error('Response Headers:', [...uploadResponse.headers.entries()]);
+
+                    const errorText = await uploadResponse.text();
+                    console.error('Error Body:', errorText);
+                    console.error('Full URL Attempted:', data.uploadUrl);
+                    console.error('========================');
+                    throw new Error('Failed to upload to S3');
+                }
+            } catch (error) {
+                console.error('=== FULL ERROR STACK ===');
+                console.error(error);
+                console.error('Error Stack:', error.stack);
+                console.error('======================');
+                showResult('error', `Upload failed: ${error.message}`);
+            }
+        });
+
+        function showResult(type, message) {
+            result.innerHTML = `
+            <div class="${type}">${message}</div>
+            `;
+        }
+    </script>
+
+</body>
+
+</html>

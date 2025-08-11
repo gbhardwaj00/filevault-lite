@@ -23,7 +23,6 @@ router.post('/init', async(req, res, next) => {
                 ? { key, contentType: mime, expiresIn: 60 }
                 : { key, expiresIn: 60 }
         );
-
         res.json({uploadUrl, key});
     } catch (err) {
         next(err);

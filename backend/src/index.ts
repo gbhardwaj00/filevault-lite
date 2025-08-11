@@ -28,6 +28,15 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;
+
+// Add detailed AWS debugging
+console.log('=== AWS CONFIG DEBUG ===');
+console.log('Region:', process.env.AWS_REGION);
+console.log('Bucket:', process.env.AWS_BUCKET_NAME);
+console.log('Access Key ID:', process.env.AWS_ACCESS_KEY_ID?.substring(0, 10) + '...');
+console.log('Secret Key Length:', process.env.AWS_SECRET_ACCESS_KEY?.length || 0);
+console.log('========================');
+
 app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`)}
 );
