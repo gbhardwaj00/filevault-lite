@@ -15,6 +15,7 @@ A secure, cloud-based file upload system built with Node.js, Express, TypeScript
 ## 📚 Architecture
 
 ### Backend (Node.js + Express + TypeScript)
+
 - **Express.js** web server with CORS support
 - **TypeScript** for type safety and better developer experience
 - **AWS SDK** for S3 integration and pre-signed URL generation
@@ -22,6 +23,7 @@ A secure, cloud-based file upload system built with Node.js, Express, TypeScript
 - **Environment-based** configuration management
 
 ### Frontend (Vanilla JavaScript + HTML)
+
 - **Modern HTML5** file input interface
 - **Vanilla JavaScript** for API communication
 - **Direct S3 uploads** using pre-signed URLs
@@ -29,6 +31,7 @@ A secure, cloud-based file upload system built with Node.js, Express, TypeScript
 - **Responsive design** for all device sizes
 
 ### AWS Infrastructure
+
 - **S3 Bucket** for secure file storage
 - **IAM Policies** for proper access control
 - **CORS Configuration** for browser-based uploads
@@ -37,11 +40,13 @@ A secure, cloud-based file upload system built with Node.js, Express, TypeScript
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ 
+
+- Node.js 16+
 - AWS Account with S3 access
 - IAM user with S3 permissions
 
 ### 1. Clone and Install
+
 ```bash
 git clone "https://github.com/gbhardwaj00/filevault-lite.git"
 cd filevault-lite/backend
@@ -49,7 +54,9 @@ npm install
 ```
 
 ### 2. Configure Environment
+
 Create a `.env` file in the backend directory:
+
 ```env
 AWS_ACCESS_KEY_ID=your_access_key_here
 AWS_SECRET_ACCESS_KEY=your_secret_key_here
@@ -59,22 +66,27 @@ PORT=4000
 ```
 
 ### 3. Start Backend
+
 ```bash
 npm run dev
 ```
 
 ### 4. Open Frontend
+
 Open `frontend.html` in your browser and start uploading files!
 
 ## 📝 API Endpoints
 
 ### Health Check
+
 ```http
 GET /health
 ```
+
 Returns server status and AWS configuration.
 
 ### Upload Initialization
+
 ```http
 POST /upload/init
 Content-Type: application/json
@@ -85,11 +97,13 @@ Content-Type: application/json
   "size": 1024000
 }
 ```
+
 Returns a pre-signed S3 URL for direct file upload.
 
 ## 🛠️ Development
 
 ### Backend Scripts
+
 ```bash
 npm run dev      # Start development server
 npm run build    # Build TypeScript
@@ -97,6 +111,7 @@ npm start        # Start production server
 ```
 
 ### Project Structure
+
 filevault-lite/
 ├── backend/
 │ ├── src/
@@ -121,16 +136,19 @@ filevault-lite/
 ### Common Issues
 
 **403 Forbidden Error**
+
 - Verify IAM user has `s3:PutObject` permission
 - Check bucket name and region in `.env`
 - Ensure CORS is properly configured
 
 **CORS Error**
+
 - Configure S3 bucket CORS policy
 - Allow `PUT`, `POST`, `GET` methods
 - Set `AllowedOrigins` to `*` for development
 
 **Signature Mismatch**
+
 - Verify access key and secret key in `.env`
 - Ensure credentials match IAM user
 - Restart backend after credential changes
