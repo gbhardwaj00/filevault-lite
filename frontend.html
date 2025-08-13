@@ -86,6 +86,65 @@
             font-size: 12px;
             font-weight: bold;
         }
+
+        .file-info {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 24px;
+            color: #007bff;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .file-size {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .file-type {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #27ae60;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 
@@ -109,12 +168,33 @@
         <button onclick="document.getElementById('fileInput').click()">Choose Files</button>
     </div>
 
+    <div class="file-info" id="fileInfo">
+        <div class="file-details">
+            <div class="file-icon">📁</div>
+            <div>
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+            <div class="file-type" id="fileType"></div>
+        </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
     <div id="result" class="result"></div>
 
     <script>
         const fileInput = document.getElementById('fileInput');
         const uploadArea = document.getElementById('uploadArea');
         const result = document.getElementById('result');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileType = document.getElementById('fileType');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
 
         // Define allowed file types
         const allowedTypes = {
@@ -133,6 +213,11 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            // Reset previous state
+            hideFileInfo();
+            hideProgress();
+            clearResult();
+
             const maxFileSize = 10 * 1024 * 1024; // 10MB
             if (file.size > maxFileSize) {
                 showResult('error', 'File size exceeds 10MB limit');
@@ -144,7 +229,25 @@
                 return;
             }
 
+            // Show file info
+            showFileInfo(file);
+
+            let interval;
+
             try {
+                // Show progress
+                showProgress();
+
+                // Simulate progress
+                let progress = 0;
+                interval = setInterval(() => {
+                    progress += 10;
+                    updateProgress(progress);
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                    }
+                }, 100);
+
                 // Get upload URL from backend
                 const response = await fetch('http://localhost:4000/upload/init', {
                     method: 'POST',
@@ -191,7 +294,12 @@
                 });
 
                 if (uploadResponse.ok) {
-                    showResult('success', `File uploaded successfully! S3 Key: ${data.key}`);
+                    clearInterval(interval);
+                    updateProgress(100);
+                    setTimeout(() => {
+                        showResult('success', `File uploaded successfully! S3 Key: ${data.key}`);
+                        hideProgress();
+                    }, 1000);
                 } else {
                     // Super detailed error logging
                     console.error('=== S3 ERROR DETAILS ===');
@@ -203,13 +311,20 @@
                     console.error('Error Body:', errorText);
                     console.error('Full URL Attempted:', data.uploadUrl);
                     console.error('========================');
+
+                    clearInterval(interval);
+                    hideProgress();
                     throw new Error('Failed to upload to S3');
                 }
             } catch (error) {
+                if (interval) {
+                    clearInterval(interval);
+                }
                 console.error('=== FULL ERROR STACK ===');
                 console.error(error);
                 console.error('Error Stack:', error.stack);
                 console.error('======================');
+                hideProgress();
                 showResult('error', `Upload failed: ${error.message}`);
             }
         });
@@ -218,6 +333,50 @@
             result.innerHTML = `
             <div class="${type}">${message}</div>
             `;
+        }
+
+        function showFileInfo(file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileType.textContent = allowedTypes[file.type] || 'Unknown';
+            fileInfo.classList.add('show');
+        }
+
+        function hideFileInfo() {
+            fileInfo.classList.remove('show');
+        }
+
+        function showProgress() {
+            progressBar.style.display = 'block';
+            updateProgress(0);
+
+            const button = document.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'Uploading...';
+        }
+
+        function hideProgress() {
+            progressBar.style.display = 'none';
+
+            const button = document.querySelector('button');
+            button.disabled = false;
+            button.textContent = 'Choose Files';
+        }
+
+        function updateProgress(percent) {
+            progressFill.style.width = percent + '%';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function clearResult() {
+            result.innerHTML = '';
         }
     </script>
 
