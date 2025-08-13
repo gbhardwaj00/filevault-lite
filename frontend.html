@@ -56,12 +56,52 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
+
+        .supported-types {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .supported-types h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .type-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .type-item {
+            background: #007bff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
     <h1>FileVault Lite</h1>
     <p>Upload your files securely and privately.</p>
+
+    <div class="supported-types">
+        <h3>📁 Supported File Types</h3>
+        <div class="type-list">
+            <span class="type-item">Images (JPG, PNG, GIF)</span>
+            <span class="type-item">Documents (PDF, DOC, TXT)</span>
+            <span class="type-item">Archives (ZIP)</span>
+            <span class="type-item">Videos (MP4)</span>
+        </div>
+    </div>
 
     <div class="upload-area" id="uploadArea">
         <p>Click or drag and drop files here</p>
