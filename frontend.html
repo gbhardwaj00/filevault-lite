@@ -19,10 +19,32 @@
             text-align: center;
             margin: 20px 0;
             border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .upload-area:hover {
             border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .upload-area.dragover {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .upload-area.dragenter {
+            border-color: #3498db;
+            background-color: #e8f4fd;
+        }
+
+        .upload-area.dragleave {
+            border-color: #ccc;
+            background-color: transparent;
+            transform: scale(1);
+            box-shadow: none;
         }
 
         button {
@@ -163,7 +185,7 @@
     </div>
 
     <div class="upload-area" id="uploadArea">
-        <p>Click or drag and drop files here</p>
+        <p>Drag & drop files here or click to select</p>
         <input type="file" id="fileInput" style="display: none;">
         <button onclick="document.getElementById('fileInput').click()">Choose Files</button>
     </div>
@@ -211,8 +233,12 @@
 
         fileInput.addEventListener('change', async (event) => {
             const file = event.target.files[0];
-            if (!file) return;
+            if (file) {
+                handleFile(file);
+            }
+        });
 
+        async function handleFile(file) {
             // Reset previous state
             hideFileInfo();
             hideProgress();
@@ -246,7 +272,7 @@
                     if (progress >= 100) {
                         clearInterval(interval);
                     }
-                }, 100);
+                }, 200);
 
                 // Get upload URL from backend
                 const response = await fetch('http://localhost:4000/upload/init', {
@@ -327,7 +353,34 @@
                 hideProgress();
                 showResult('error', `Upload failed: ${error.message}`);
             }
+        };
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
         });
+        uploadArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragenter');
+        });
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragenter', 'dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragenter', 'dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
 
         function showResult(type, message) {
             result.innerHTML = `
