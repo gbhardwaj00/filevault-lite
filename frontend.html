@@ -76,6 +76,19 @@
         const uploadArea = document.getElementById('uploadArea');
         const result = document.getElementById('result');
 
+        // Define allowed file types
+        const allowedTypes = {
+            'image/jpeg': 'Image (JPEG)',
+            'image/jpg': 'Image (JPG)',
+            'image/png': 'Image (PNG)',
+            'image/gif': 'Image (GIF)',
+            'application/pdf': 'Document (PDF)',
+            'application/msword': 'Document (DOC)',
+            'text/plain': 'Document (TXT)',
+            'application/zip': 'Archive (ZIP)',
+            'video/mp4': 'Video (MP4)'
+        };
+
         fileInput.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (!file) return;
@@ -85,6 +98,12 @@
                 showResult('error', 'File size exceeds 10MB limit');
                 return;
             }
+
+            if (!allowedTypes[file.type]) {
+                showResult('error', 'Unsupported file type');
+                return;
+            }
+
             try {
                 // Get upload URL from backend
                 const response = await fetch('http://localhost:4000/upload/init', {
