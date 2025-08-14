@@ -132,6 +132,30 @@
             color: #007bff;
         }
 
+        .file-icon-large {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        .file-icon-small {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .thumbnail-container {
+            margin: 15px 0;
+            text-align: center;
+            display: block;
+        }
+
+        .thumbnail {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+        }
+
         .file-name {
             font-weight: bold;
             color: #2c3e50;
@@ -192,13 +216,14 @@
 
     <div class="file-info" id="fileInfo">
         <div class="file-details">
-            <div class="file-icon">📁</div>
+            <div class="file-icon" id="fileIcon">��</div>
             <div>
                 <div class="file-name" id="fileName"></div>
                 <div class="file-size" id="fileSize"></div>
+                <div class="file-type" id="fileType"></div>
             </div>
-            <div class="file-type" id="fileType"></div>
         </div>
+        <div id="thumbnailContainer" class="thumbnail-container" style="display: none;"></div>
     </div>
 
     <div class="progress-bar" id="progressBar">
@@ -215,6 +240,7 @@
         const fileName = document.getElementById('fileName');
         const fileSize = document.getElementById('fileSize');
         const fileType = document.getElementById('fileType');
+        const fileIcon = document.getElementById('fileIcon');
         const progressBar = document.getElementById('progressBar');
         const progressFill = document.getElementById('progressFill');
 
@@ -236,6 +262,35 @@
             if (file) {
                 handleFile(file);
             }
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragenter');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragenter', 'dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragenter', 'dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
         });
 
         async function handleFile(file) {
@@ -355,31 +410,6 @@
             }
         };
 
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        uploadArea.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragenter');
-        });
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragenter', 'dragover');
-        });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragenter', 'dragover');
-
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                handleFile(file);
-            }
-        });
-
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
 
 
         function showResult(type, message) {
@@ -392,6 +422,20 @@
             fileName.textContent = file.name;
             fileSize.textContent = formatFileSize(file.size);
             fileType.textContent = allowedTypes[file.type] || 'Unknown';
+
+            const icon = getFileIcon(file.type);
+            fileIcon.textContent = icon;
+
+            // Show thumbnail for images
+            if (file.type.startsWith('image/')) {
+                console.log('Calling showImageThumbnail...');
+                showImageThumbnail(file);
+            } else {
+                console.log('Not an image, hiding thumbnail...');
+                hideImageThumbnail();
+            }
+
+
             fileInfo.classList.add('show');
         }
 
@@ -431,6 +475,64 @@
         function clearResult() {
             result.innerHTML = '';
         }
+
+        function getFileIcon(fileType) {
+            const iconMap = {
+                'image/jpeg': '🖼️',
+                'image/jpg': '🖼️',
+                'image/png': '🖼️',
+                'image/gif': '🖼️',
+                'application/pdf': '📄',
+                'application/msword': '📝',
+                'text/plain': '📄',
+                'application/zip': '🗂️',
+                'video/mp4': '🎥'
+            }
+            return iconMap[fileType] || '📄';
+        }
+
+        function showImageThumbnail(file) {
+            console.log('showImageThumbnail called with:', file.name, file.type);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                console.log('FileReader loaded, creating image...');
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('thumbnail');
+                img.alt = file.name;
+
+                let thumbnailContainer = document.getElementById('thumbnailContainer');
+                if (!thumbnailContainer) {
+                    console.log('Creating thumbnail container...');
+                    thumbnailContainer = document.createElement('div');
+                    thumbnailContainer.id = 'thumbnailContainer';
+                    thumbnailContainer.className = 'thumbnail-container';
+                    fileInfo.appendChild(thumbnailContainer);
+                }
+
+                console.log('Adding image to container...');
+                thumbnailContainer.innerHTML = '';
+                thumbnailContainer.appendChild(img);
+                console.log('Thumbnail added successfully!');
+                thumbnailContainer.style.display = 'block';
+            };
+
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function hideImageThumbnail() {
+            const thumbnailContainer = document.getElementById('thumbnailContainer');
+            if (thumbnailContainer) {
+                thumbnailContainer.innerHTML = '';
+            }
+        }
+
     </script>
 
 </body>
